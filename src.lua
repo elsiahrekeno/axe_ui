@@ -19,6 +19,44 @@ function On(self, oct)
 end
 if getgenv().executed then return end 
 
+function DraggingEnabled(frame, parent)
+        
+    parent = parent or frame
+    
+    -- stolen from wally or kiriot, kek
+    local dragging = false
+    local dragInput, mousePos, framePos
+
+    frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            mousePos = input.Position
+            framePos = parent.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    frame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            parent.Position  = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        end
+    end)
+end
+
+
+
 function Vlassis.Load(title)
     getgenv().executed = true 
     title = title or "New Library"
@@ -57,6 +95,7 @@ function Vlassis.Load(title)
                 Header.Parent = MotherFrame
                 Header.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
                 Header.Size = UDim2.new(0, 387, 0, 22)
+        DraggingEnabled(Header,MotherFrame)
 
                 UICorner_2.CornerRadius = UDim.new(0, 4)
                 UICorner_2.Parent = Header
